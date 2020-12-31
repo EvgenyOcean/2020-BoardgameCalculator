@@ -1,0 +1,14 @@
+<form action="/" method="POST" class='shares-form my-2'>
+  {% csrf_token %}
+  {{ shares_formset.management_form }}
+  {% for form in shares_formset %}
+    <div class="input-group share">
+      {% for value in form %}
+        {{value}}
+      {% endfor %}
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-outline-warning my-2">Update</button>
+</form>
+
+

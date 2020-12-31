@@ -1,0 +1,12 @@
+<form action="/" method="POST" class='shares-form players-form my-2'>
+  {% csrf_token %}
+  {{ players_formset.management_form }}
+  {% for form in players_formset %}
+    {% for line in form %}
+      <div class="playerProfit mb-2">
+        {{line}}
+      </div>
+    {% endfor %}
+  {% endfor %}
+  <button type="submit" class="btn btn-outline-danger my-2 mb-4">Update</button>
+</form>

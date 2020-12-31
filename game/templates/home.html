@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row border mt-2 d-flex justify-content-end">
+    <div class="col-3">
+      {% include 'players.html' with players_formset=players_formset%}
+      {% include 'shares.html' with shares_formset=shares_formset %}
+    </div>
+    <div class="col-9">
+      <form action="/" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary w-100 my-2">Update</button>
+        {{ companies_formset.management_form }}
+        <table class="table">
+          <thead class="text-warning">
+            <tr>
+              <th scope="col">Asset</th>
+              <th scope="col">Invest</th>
+              <th scope="col">Coef</th>
+              <th scope="col">Share</th>
+              <th scope="col">Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in companies_formset %}
+                <tr>
+                  {% for line in form %}
+                    <td>{{line}}</td>
+                  {% endfor %}
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let playersPossessions = new Map();
+  const playersProfit = document.querySelectorAll('.playerProfit');
+  for (let pp of playersProfit){
+    const playerName = pp.children[0].value;
+    if (playerName){
+      playersPossessions.set(playerName, []);
+    }
+  }
+
+  const shares = document.querySelectorAll('.share');
+  let sharePriceMap = new Map()
+  for (let share of shares){
+    sharePriceMap.set(share.children[0].value, +share.children[1].value);
+  }
+
+  const records = document.querySelector('tbody').querySelectorAll('tr');
+  for (let record of records){
+    let possessionOwner = record.lastElementChild.firstElementChild.selectedOptions[0].innerHTML;
+    let possessionName = record.firstElementChild.children[0].value;
+    let playerOwns = playersPossessions.get(possessionOwner);
+    if (playerOwns){
+      playerOwns.push(possessionName);
+    }
+  }
+
+  function calculatePlayersProfit(){
+    for (let [player, possessions] of playersPossessions){
+      let tempProfit = 0;
+      for (let possession of possessions){
+        let record = document.querySelector(`[value="${possession}"]`).closest('tr');
+        const I = +record.children[1].firstElementChild.value;
+        const C = +record.children[2].firstElementChild.value;
+        const S = sharePriceMap.get(record.children[3].firstElementChild.selectedOptions[0].innerHTML);
+        if (S < 0){
+          tempProfit += C * S;
+        } else {
+          tempProfit += I * C * S;
+        }
+      }
+
+      let profit = document.createElement('input');
+      profit.value = tempProfit;
+      document.querySelector(`[value="${player}"]`).parentElement.append(profit)
+    }
+  }
+
+  calculatePlayersProfit();
+</script>
+{% endblock %}
